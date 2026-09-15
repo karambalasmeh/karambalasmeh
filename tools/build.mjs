@@ -133,6 +133,10 @@ function statBlock(t) {
 }
 
 /* --------------------------------------------------------------- page */
+// Rendered at 880px — the width GitHub actually gives a README on desktop — so
+// type lands at its true size instead of being scaled down by a third.
+const W = 880;
+
 function html(theme) {
   const t = THEMES[theme];
   return `<!doctype html><html><head><meta charset="utf-8">
@@ -141,184 +145,152 @@ function html(theme) {
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{width:1400px;background:${t.bg};color:${t.ink};
-       font-family:Archivo,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-  .card{position:relative;overflow:hidden;
-        background:
-          linear-gradient(180deg, ${t.panel} 0%, ${t.bg} 420px, ${t.bg} 100%);
-        background-color:${t.bg}}
-  /* neatline: the double border a chart is printed inside */
-  .neat{position:absolute;inset:14px;border:1px solid ${t.line2};pointer-events:none;z-index:5}
-  .neat::before{content:'';position:absolute;inset:5px;border:1px solid ${t.line}}
-  .grid{position:absolute;inset:0;z-index:0;
-        background-image:linear-gradient(${t.grid} 1px,transparent 1px),
-                         linear-gradient(90deg,${t.grid} 1px,transparent 1px);
-        background-size:56px 56px}
-  .field{position:absolute;top:0;left:0;right:0;height:560px;z-index:1;overflow:hidden;
-         -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 55%,transparent 97%)}
-  .contours{width:100%;height:100%;display:block}
-  .inner{position:relative;z-index:3;padding:58px 64px 50px}
+  body{width:${W}px;background:${t.bg};color:${t.ink};
+       font-family:Archivo,system-ui,sans-serif;font-size:15px;line-height:1.6;
+       -webkit-font-smoothing:antialiased}
+  .card{position:relative;overflow:hidden;background:${t.bg}}
+  .neat{position:absolute;inset:9px;border:1px solid ${t.line2};pointer-events:none;z-index:5}
+
+  /* The contour band lives at the very top and carries no text. The concept
+     survives; the interference with reading does not. */
+  .band{position:relative;height:104px;border-bottom:1px solid ${t.line};
+        background:${t.panel};overflow:hidden}
+  .band .contours{width:100%;height:100%;display:block;opacity:.85}
+  .fix{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.16em;
+       color:${t.sand};margin-bottom:16px}
+  .fix s{text-decoration:none;color:${t.faint}}
+
+  .inner{position:relative;z-index:3;padding:38px 30px 34px}
 
   /* ---- header ---- */
-  header{position:relative;min-height:auto;padding-bottom:10px;
-         display:grid;grid-template-columns:1fr 330px;gap:52px;align-items:start}
-  .hgroup{padding-top:4px}
-  .fix{display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;
-       font-size:13px;letter-spacing:.06em;color:${t.sand};margin-bottom:30px}
-  .fix i{display:block;width:8px;height:8px;border:1.5px solid ${t.sand};
-         transform:rotate(45deg)}
-  .fix s{text-decoration:none;color:${t.faint}}
-  h1{font-family:'Bricolage Grotesque',sans-serif;font-size:96px;font-weight:700;
-     line-height:.9;letter-spacing:-.035em;margin-bottom:20px}
-  .role{font-size:25px;font-weight:600;color:${t.sand};margin-bottom:14px}
-  .lede{font-size:17.5px;line-height:1.62;color:${t.dim};max-width:64ch;margin-bottom:16px}
-  .org{font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:${t.dim}}
+  h1{font-family:'Bricolage Grotesque',sans-serif;font-size:60px;font-weight:700;
+     line-height:.95;letter-spacing:-.03em;margin-bottom:12px}
+  .role{font-size:21px;font-weight:600;color:${t.sand};margin-bottom:12px}
+  .lede{font-size:16.5px;line-height:1.6;color:${t.dim};max-width:62ch;margin-bottom:12px}
+  .org{font-family:'IBM Plex Mono',monospace;font-size:13px;color:${t.dim}}
 
-  /* scale bar, bottom-right of the header, as a chart prints one */
-  /* the title block a chart prints in its corner */
-  .block{border:1px solid ${t.line2};background:${t.panel}e6;padding:20px 22px;
-         font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.07em;
-         color:${t.faint};backdrop-filter:blur(2px)}
-  .block h4{font-size:10.5px;letter-spacing:.2em;color:${t.sand};font-weight:500;
-            margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid ${t.line}}
-  .block dl{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;margin-bottom:16px}
-  .block dt{color:${t.faint}}
-  .block dd{color:${t.ink};text-align:right}
-  .block .key{display:grid;gap:6px;padding-top:13px;border-top:1px solid ${t.line};
-              margin-bottom:15px}
-  .block .key div{display:flex;gap:9px;align-items:center;color:${t.dim}}
-  .block .key b{color:${t.sand};font-weight:400;width:12px;display:inline-block}
-  .scale .bars{display:flex;margin-bottom:6px}
-  .scale .bars i{width:30px;height:7px;border:1px solid ${t.sandDim}}
-  .scale .bars i:nth-child(odd){background:${t.sandDim}}
-  .scale{padding-top:13px;border-top:1px solid ${t.line}}
+  /* title block, laid across the width rather than squeezed into a corner */
+  .block{margin-top:26px;border:1px solid ${t.line2};background:${t.panel};
+         padding:18px 22px;font-family:'IBM Plex Mono',monospace}
+  .block dl{display:grid;grid-template-columns:repeat(4,1fr);gap:0 18px}
+  .block dt{font-size:10.5px;letter-spacing:.16em;color:${t.faint};margin-bottom:5px}
+  .block dd{font-size:14px;color:${t.ink}}
+  .block .key{display:flex;gap:26px;flex-wrap:wrap;margin-top:16px;padding-top:14px;
+              border-top:1px solid ${t.line};font-size:12px;color:${t.dim}}
+  .block .key b{color:${t.sand};font-weight:400;margin-right:7px}
 
   /* ---- section rule ---- */
-  .rule{display:flex;align-items:center;gap:20px;margin:46px 0 26px}
-  .rule-label{font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500;
-              letter-spacing:.22em;color:${t.sand};white-space:nowrap}
+  .rule{display:flex;align-items:center;gap:16px;margin:40px 0 20px}
+  .rule-label{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;
+              letter-spacing:.2em;color:${t.sand};white-space:nowrap}
   .rule i{flex:1;height:1px;background:${t.line2}}
 
   /* ---- what i build ---- */
-  .builds{display:grid;gap:0}
-  .build{display:grid;grid-template-columns:210px 1fr;gap:26px;align-items:baseline;
-         padding:15px 0;border-bottom:1px solid ${t.line}}
+  .build{display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:baseline;
+         padding:13px 0;border-bottom:1px solid ${t.line}}
   .build:first-child{border-top:1px solid ${t.line}}
-  .build b{font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500;
-           letter-spacing:.14em;color:${t.ink}}
-  .build b::before{content:'◆';color:${t.sand};margin-right:11px;font-size:9px;
+  .build b{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;
+           letter-spacing:.11em;color:${t.ink}}
+  .build b::before{content:'◆';color:${t.sand};margin-right:9px;font-size:8px;
                    position:relative;top:-2px}
-  .build span{font-size:16px;color:${t.dim};line-height:1.5}
+  .build span{font-size:15.5px;color:${t.dim};line-height:1.5}
 
-  /* ---- refusals: printed like depth soundings ---- */
-  .refusals{display:grid;gap:14px}
-  .ref{display:grid;grid-template-columns:186px 1fr;gap:30px;
-       background:${t.sunk};border:1px solid ${t.line};border-left:2px solid ${t.sand};
-       padding:24px 28px}
-  .ref .reading{font-family:'IBM Plex Mono',monospace;font-size:31px;font-weight:500;
-                color:${t.sand};line-height:1;letter-spacing:-.01em}
-  .ref .depth{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:${t.faint};
-              letter-spacing:.14em;margin-top:9px}
-  .ref h3{font-size:18px;font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
-  .ref p{font-size:15.5px;line-height:1.6;color:${t.dim}}
-  .lead-in{font-size:16.5px;color:${t.dim};max-width:78ch;margin:-8px 0 26px;line-height:1.6}
+  /* ---- refusals ---- */
+  .lead-in{font-size:16px;color:${t.dim};margin:-4px 0 20px;line-height:1.6;max-width:70ch}
+  .refusals{display:grid;gap:12px}
+  .ref{background:${t.sunk};border:1px solid ${t.line};border-left:2px solid ${t.sand};
+       padding:18px 22px}
+  .ref .top{display:flex;align-items:baseline;gap:14px;margin-bottom:8px}
+  .ref .reading{font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:500;
+                color:${t.sand};line-height:1}
+  .ref h3{font-size:17px;font-weight:600}
+  .ref p{font-size:15px;line-height:1.58;color:${t.dim}}
 
   /* ---- stack ---- */
-  .sgroup{margin-bottom:24px}
+  .sgroup{margin-bottom:20px}
   .sgroup > b{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;
-              letter-spacing:.2em;color:${t.faint};margin-bottom:17px}
-  .icons{display:grid;grid-template-columns:repeat(8,1fr);gap:16px}
+              letter-spacing:.18em;color:${t.faint};margin-bottom:12px}
+  .icons{display:grid;grid-template-columns:repeat(8,1fr);gap:10px}
   .ic{text-align:center}
-  .ic .box{height:60px;border:1px solid ${t.line};background:${t.sunk};
-           display:grid;place-items:center;margin-bottom:9px}
-  .ic svg{width:26px;height:26px;opacity:.9}
-  .ic span{display:block;font-family:'IBM Plex Mono',monospace;font-size:9.5px;
-           letter-spacing:.08em;color:${t.faint}}
+  .ic .box{height:52px;border:1px solid ${t.line};background:${t.sunk};
+           display:grid;place-items:center;margin-bottom:6px}
+  .ic svg{width:22px;height:22px;opacity:.92}
+  .ic span{display:block;font-family:'IBM Plex Mono',monospace;font-size:8.5px;
+           letter-spacing:.05em;color:${t.faint}}
 
-  /* ---- stations ---- */
-  .stations{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  /* ---- stations: one per row, so the screenshots are actually visible ---- */
+  .stations{display:grid;gap:20px}
   .st{border:1px solid ${t.line};background:${t.sunk};overflow:hidden}
-  .st.wide{grid-column:span 2}
   .st .frame{background:${t.bg};border-bottom:1px solid ${t.line};
-             height:252px;overflow:hidden;position:relative}
-  .st.wide .frame{height:330px}
-  .st .frame img{width:100%;display:block;border-bottom:1px solid ${t.shotEdge}}
-  .st .body{padding:22px 26px 25px}
-  .st .hd{display:flex;align-items:baseline;gap:13px;margin-bottom:5px}
-  .st .n{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:${t.sand};
-         letter-spacing:.1em}
-  .st .n::before{content:'△ ';font-size:10px}
-  .st h3{font-family:'Bricolage Grotesque',sans-serif;font-size:23px;font-weight:600;
-         letter-spacing:.015em}
-  .st .kind{font-size:13px;color:${t.sand};margin-bottom:11px}
-  .st p{font-size:15px;line-height:1.55;color:${t.dim};margin-bottom:13px}
-  .st .tech{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:${t.faint};
-            letter-spacing:.05em}
+             height:330px;overflow:hidden}
+  .st .frame img{width:100%;display:block}
+  .st .body{padding:18px 22px 20px}
+  .st .hd{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
+  .st .n{font-family:'IBM Plex Mono',monospace;font-size:11px;color:${t.sand};
+         letter-spacing:.09em}
+  .st .n::before{content:'△ '}
+  .st h3{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:600;
+         letter-spacing:.01em}
+  .st .kind{font-size:13px;color:${t.sand};margin-bottom:9px}
+  .st p{font-size:15px;line-height:1.55;color:${t.dim};margin-bottom:11px}
+  .st .tech{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:${t.faint}}
 
-  .also{font-size:14.5px;line-height:1.75;color:${t.dim};border:1px solid ${t.line};
-        border-left:2px solid ${t.sandDim};background:${t.sunk};padding:19px 24px;margin-top:24px}
+  .also{font-size:14.5px;line-height:1.7;color:${t.dim};border:1px solid ${t.line};
+        border-left:2px solid ${t.sandDim};background:${t.sunk};padding:16px 20px;margin-top:20px}
 
   /* ---- this year ---- */
-  .year-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:26px}
-  .stat b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:38px;
-          font-weight:700;letter-spacing:-.03em;line-height:1;color:${t.ink}}
-  .stat span{display:block;font-size:12.5px;color:${t.faint};margin-top:7px}
-  .cal{display:grid;grid-template-rows:repeat(7,20px);grid-auto-flow:column;
-       grid-auto-columns:20px;gap:4px;margin-bottom:30px;justify-content:start}
-  .cal i{display:block;width:20px;height:20px;border-radius:2px}
-  .langs{display:grid;grid-template-columns:1fr 1fr;gap:11px 46px;margin-bottom:22px}
-  .lang{display:grid;grid-template-columns:132px 1fr 52px;gap:14px;align-items:center}
-  .lang span{font-size:13.5px;color:${t.dim}}
-  .lang em{font-family:'IBM Plex Mono',monospace;font-size:12px;color:${t.ink};
+  .year-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .stat b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:32px;
+          font-weight:700;letter-spacing:-.025em;line-height:1;color:${t.ink}}
+  .stat span{display:block;font-size:12px;color:${t.faint};margin-top:5px}
+  .cal{display:grid;grid-template-rows:repeat(7,14px);grid-auto-flow:column;
+       grid-auto-columns:14px;gap:3px;margin-bottom:24px;justify-content:start}
+  .cal i{display:block;width:14px;height:14px;border-radius:2px}
+  .langs{display:grid;grid-template-columns:1fr 1fr;gap:9px 30px;margin-bottom:16px}
+  .lang{display:grid;grid-template-columns:110px 1fr 46px;gap:10px;align-items:center}
+  .lang span{font-size:13px;color:${t.dim}}
+  .lang em{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:${t.ink};
            font-style:normal;text-align:right}
   .lang .bar{height:5px;background:${t.line};overflow:hidden}
   .lang .bar i{display:block;height:100%;background:${t.sand}}
-  .note{font-size:12.5px;line-height:1.6;color:${t.faint};max-width:96ch}
+  .note{font-size:12.5px;line-height:1.6;color:${t.faint}}
 
   /* ---- footer ---- */
-  footer{margin-top:52px;padding-top:24px;border-top:1px solid ${t.line2};
-         display:grid;gap:7px;font-size:13.5px;color:${t.faint}}
-  footer .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;
-                  letter-spacing:.2em;color:${t.sandDim};margin-bottom:5px}
+  footer{margin-top:34px;padding-top:18px;border-top:1px solid ${t.line2};
+         display:grid;gap:6px;font-size:13px;color:${t.faint}}
+  footer .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+                  letter-spacing:.18em;color:${t.sandDim};margin-bottom:4px}
 </style></head><body>
 <div class="card">
-  <div class="grid"></div>
-  <div class="field">${contourSvg(t, 1400, 560, { lines: 20, seed: 11 })}</div>
   <div class="neat"></div>
-  <div class="inner">
 
-    <header>
-      <div class="hgroup">
-        <div class="fix"><i></i> ${me.coords} <s>/ ${me.place.toUpperCase()}</s></div>
-        <h1>${me.name}</h1>
-        <div class="role">${me.role}</div>
-        <p class="lede">${me.lede}</p>
-        <div class="org">${me.org}</div>
+  <div class="band">
+    ${contourSvg(t, W, 104, { lines: 13, seed: 11 })}
+  </div>
+
+  <div class="inner">
+    <div class="fix">◇ ${me.coords} <s>/ ${me.place.toUpperCase()}</s></div>
+    <h1>${me.name}</h1>
+    <div class="role">${me.role}</div>
+    <p class="lede">${me.lede}</p>
+    <div class="org">${me.org}</div>
+
+    <div class="block">
+      <dl>
+        <div><dt>SURVEYED</dt><dd>2022 — 2026</dd></div>
+        <div><dt>STATIONS</dt><dd>${stations.length} plotted</dd></div>
+        <div><dt>SOUNDINGS</dt><dd>${refusals.length} null</dd></div>
+        <div><dt>DATUM</dt><dd>Evidence</dd></div>
+      </dl>
+      <div class="key">
+        <span><b>△</b>station — work that shipped</span>
+        <span><b>◆</b>capability</span>
+        <span><b>—</b>null reading, recorded</span>
       </div>
-      <div class="block">
-        <h4>SHEET 01</h4>
-        <dl>
-          <dt>SURVEYED</dt><dd>2022 — 2026</dd>
-          <dt>STATIONS</dt><dd>${stations.length} PLOTTED</dd>
-          <dt>SOUNDINGS</dt><dd>${refusals.length} NULL</dd>
-          <dt>DATUM</dt><dd>EVIDENCE</dd>
-        </dl>
-        <div class="key">
-          <div><b>△</b> station — work that shipped</div>
-          <div><b>◆</b> capability</div>
-          <div><b>—</b> null reading, recorded</div>
-        </div>
-        <div class="scale">
-          <div class="bars"><i></i><i></i><i></i><i></i></div>
-          DEPTHS MEASURED, NOT ASSUMED
-        </div>
-      </div>
-    </header>
+    </div>
 
     ${rule(t, 'WHAT I BUILD')}
-    <div class="builds">
-      ${builds.map(([k, v]) => `<div class="build"><b>${k}</b><span>${v}</span></div>`).join('')}
-    </div>
+    ${builds.map(([k, v]) => `<div class="build"><b>${k}</b><span>${v}</span></div>`).join('')}
 
     ${rule(t, 'WHEN THE ANSWER IS NO')}
     <p class="lead-in">A model that cannot decline is not reporting a result, it is reporting a
@@ -326,8 +298,8 @@ function html(theme) {
     <div class="refusals">
       ${refusals.map(r => `
         <div class="ref">
-          <div><div class="reading">${r.reading}</div><div class="depth">READING</div></div>
-          <div><h3>${r.title}</h3><p>${r.line}</p></div>
+          <div class="top"><span class="reading">${r.reading}</span><h3>${r.title}</h3></div>
+          <p>${r.line}</p>
         </div>`).join('')}
     </div>
 
@@ -344,7 +316,7 @@ function html(theme) {
     ${rule(t, 'SELECTED WORK')}
     <div class="stations">
       ${stations.map(s => `
-        <div class="st${s.wide ? ' wide' : ''}">
+        <div class="st">
           <div class="frame"><img src="${dataUri(s.shot)}" alt=""></div>
           <div class="body">
             <div class="hd"><span class="n">STATION ${s.n}</span><h3>${s.name}</h3></div>
@@ -373,7 +345,7 @@ function html(theme) {
 /* --------------------------------------------------------------- run */
 const browser = await chromium.launch();
 for (const theme of ['dark', 'light']) {
-  const ctx = await browser.newContext({ viewport: { width: 1400, height: 1200 }, deviceScaleFactor: 2 });
+  const ctx = await browser.newContext({ viewport: { width: W, height: 1200 }, deviceScaleFactor: 2 });
   const page = await ctx.newPage();
   await page.setContent(html(theme), { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
