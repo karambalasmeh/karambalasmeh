@@ -1,0 +1,35 @@
+# Redraws the contribution graph as a snake and commits it to the `output`
+# branch, which README.md points at. Runs every six hours and on demand.
+name: snake
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: generate
+        uses: Platane/snk@v3
+        id: snake
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          # sandstone on indigo, to match the card
+          outputs: |
+            dist/snake-dark.svg?palette=github-dark&color_snake=#E7B269&color_dots=#0B0D1A,#5C4526,#8A6430,#B5854A,#E7B269
+            dist/snake-light.svg?palette=github-light&color_snake=#8A5A16&color_dots=#EAEEF2,#E0CBA8,#CBA86E,#B5854A,#8A5A16
+
+      - name: push to output branch
+        uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: output
+          build_dir: dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
