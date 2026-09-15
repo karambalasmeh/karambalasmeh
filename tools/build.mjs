@@ -25,60 +25,20 @@ const stats = JSON.parse(fs.readFileSync(path.join(HERE, 'stats.json'), 'utf8'))
 /* ---------------------------------------------------------------- theme */
 const THEMES = {
   dark: {
-    bg: '#06070E', panel: '#0B0D1A', sunk: '#090B15',
-    line: '#1C2038', line2: '#2A3050',
-    contour: 'rgba(231,178,105,.22)', contourHi: 'rgba(231,178,105,.55)',
-    sand: '#E7B269', sandDim: '#B5854A',
-    ink: '#EFEBE3', dim: '#9698AE', faint: '#5A5D78',
-    shotEdge: '#ffffff14', grid: 'rgba(231,178,105,.07)',
+    bg: '#0A0A0B', panel: '#111011', sunk: '#0E0E0F',
+    line: '#232120', line2: '#332F2A',
+    sand: '#E7B269', sandDim: '#A87C42',
+    ink: '#F0ECE5', dim: '#9A958C', faint: '#6B665E',
+    shotEdge: '#ffffff12',
   },
   light: {
-    // chart paper: pale blue-grey stock, iron-gall ink, burnt-sienna contours
-    bg: '#EAEEF2', panel: '#F7F9FB', sunk: '#E2E8EE',
-    line: '#C2CEDA', line2: '#9BADBE',
-    contour: 'rgba(150,98,28,.30)', contourHi: 'rgba(150,98,28,.62)',
-    sand: '#8A5A16', sandDim: '#A97B3A',
-    ink: '#0F1626', dim: '#46566B', faint: '#76879B',
-    shotEdge: '#00000018', grid: 'rgba(60,90,120,.07)',
+    bg: '#FAF9F7', panel: '#FFFFFF', sunk: '#F3F1EC',
+    line: '#E2DED6', line2: '#CBC5B9',
+    sand: '#8A5A16', sandDim: '#A9863F',
+    ink: '#141310', dim: '#57534B', faint: '#8A857B',
+    shotEdge: '#00000014',
   },
 };
-
-/* ------------------------------------------------- contour line field */
-// Nested isobaths. Each line is the one above it, pushed down and re-wobbled,
-// so the field reads as terrain rather than as a stack of sine waves.
-function contours({ w, h, lines = 22, seed = 7 }) {
-  let s = seed;
-  const rnd = () => (s = (s * 1103515245 + 12345) % 2147483648) / 2147483648;
-  const out = [];
-  const harmonics = Array.from({ length: 5 }, () => ({
-    k: 0.6 + rnd() * 3.4, amp: 0.25 + rnd() * 1.0, phase: rnd() * Math.PI * 2,
-  }));
-  for (let i = 0; i < lines; i++) {
-    const t = i / (lines - 1);
-    const baseY = h * (0.10 + t * 0.95);
-    const scale = 26 + 40 * Math.sin(t * Math.PI); // widest swing mid-field
-    const pts = [];
-    for (let x = -40; x <= w + 40; x += 11) {
-      const u = x / w;
-      let y = baseY;
-      for (const hm of harmonics) {
-        y += Math.sin(u * Math.PI * 2 * hm.k + hm.phase + t * 1.9) * hm.amp * scale;
-      }
-      y += Math.sin(u * Math.PI * 7.3 + t * 5) * 3.5; // fine roughness
-      pts.push([x.toFixed(1), y.toFixed(1)]);
-    }
-    const d = pts.map((p, j) => (j ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ');
-    out.push({ d, major: i % 5 === 0 });
-  }
-  return out;
-}
-
-const contourSvg = (t, w, h, opts = {}) => `
-<svg class="contours" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
-  ${contours({ w, h, ...opts }).map(c =>
-    `<path d="${c.d}" fill="none" stroke="${c.major ? t.contourHi : t.contour}" stroke-width="${c.major ? 1.5 : 1}"/>`
-  ).join('')}
-</svg>`;
 
 /* ------------------------------------------------------------- assets */
 const dataUri = (f) => {
@@ -149,18 +109,11 @@ function html(theme) {
        font-family:Archivo,system-ui,sans-serif;font-size:15px;line-height:1.6;
        -webkit-font-smoothing:antialiased}
   .card{position:relative;overflow:hidden;background:${t.bg}}
-  .neat{position:absolute;inset:9px;border:1px solid ${t.line2};pointer-events:none;z-index:5}
-
-  /* The contour band lives at the very top and carries no text. The concept
-     survives; the interference with reading does not. */
-  .band{position:relative;height:104px;border-bottom:1px solid ${t.line};
-        background:${t.panel};overflow:hidden}
-  .band .contours{width:100%;height:100%;display:block;opacity:.85}
   .fix{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.16em;
        color:${t.sand};margin-bottom:16px}
   .fix s{text-decoration:none;color:${t.faint}}
 
-  .inner{position:relative;z-index:3;padding:38px 30px 34px}
+  .inner{position:relative;z-index:3;padding:46px 34px 38px}
 
   /* ---- header ---- */
   h1{font-family:'Bricolage Grotesque',sans-serif;font-size:60px;font-weight:700;
@@ -262,12 +215,6 @@ function html(theme) {
                   letter-spacing:.18em;color:${t.sandDim};margin-bottom:4px}
 </style></head><body>
 <div class="card">
-  <div class="neat"></div>
-
-  <div class="band">
-    ${contourSvg(t, W, 104, { lines: 13, seed: 11 })}
-  </div>
-
   <div class="inner">
     <div class="fix">◇ ${me.coords} <s>/ ${me.place.toUpperCase()}</s></div>
     <h1>${me.name}</h1>
