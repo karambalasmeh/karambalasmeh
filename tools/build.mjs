@@ -15,7 +15,7 @@ import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { me, builds, refusals, stack, stations, alsoRow, footer, links } from './data.js';
+import { me, facts, builds, honest, stack, projects, alsoRow, footer, links } from './data.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -109,10 +109,6 @@ function html(theme) {
        font-family:Archivo,system-ui,sans-serif;font-size:15px;line-height:1.6;
        -webkit-font-smoothing:antialiased}
   .card{position:relative;overflow:hidden;background:${t.bg}}
-  .fix{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.16em;
-       color:${t.sand};margin-bottom:16px}
-  .fix s{text-decoration:none;color:${t.faint}}
-
   .inner{position:relative;z-index:3;padding:46px 34px 38px}
 
   /* ---- header ---- */
@@ -128,9 +124,6 @@ function html(theme) {
   .block dl{display:grid;grid-template-columns:repeat(4,1fr);gap:0 18px}
   .block dt{font-size:10.5px;letter-spacing:.16em;color:${t.faint};margin-bottom:5px}
   .block dd{font-size:14px;color:${t.ink}}
-  .block .key{display:flex;gap:26px;flex-wrap:wrap;margin-top:16px;padding-top:14px;
-              border-top:1px solid ${t.line};font-size:12px;color:${t.dim}}
-  .block .key b{color:${t.sand};font-weight:400;margin-right:7px}
 
   /* ---- section rule ---- */
   .rule{display:flex;align-items:center;gap:16px;margin:40px 0 20px}
@@ -149,15 +142,12 @@ function html(theme) {
   .build span{font-size:15.5px;color:${t.dim};line-height:1.5}
 
   /* ---- refusals ---- */
-  .lead-in{font-size:16px;color:${t.dim};margin:-4px 0 20px;line-height:1.6;max-width:70ch}
-  .refusals{display:grid;gap:12px}
-  .ref{background:${t.sunk};border:1px solid ${t.line};border-left:2px solid ${t.sand};
-       padding:18px 22px}
-  .ref .top{display:flex;align-items:baseline;gap:14px;margin-bottom:8px}
-  .ref .reading{font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:500;
-                color:${t.sand};line-height:1}
-  .ref h3{font-size:17px;font-weight:600}
-  .ref p{font-size:15px;line-height:1.58;color:${t.dim}}
+  .lead-in{font-size:16px;color:${t.dim};margin:-4px 0 22px;line-height:1.6;max-width:72ch}
+  .honest{display:grid;gap:0}
+  .hon{padding:16px 0;border-bottom:1px solid ${t.line}}
+  .hon:first-child{border-top:1px solid ${t.line}}
+  .hon h3{font-size:16px;font-weight:600;color:${t.sand};margin-bottom:6px}
+  .hon p{font-size:15.5px;line-height:1.58;color:${t.dim};max-width:82ch}
 
   /* ---- stack ---- */
   .sgroup{margin-bottom:20px}
@@ -172,18 +162,14 @@ function html(theme) {
            letter-spacing:.05em;color:${t.faint}}
 
   /* ---- stations: one per row, so the screenshots are actually visible ---- */
-  .stations{display:grid;gap:20px}
+  .projects{display:grid;gap:20px}
   .st{border:1px solid ${t.line};background:${t.sunk};overflow:hidden}
   .st .frame{background:${t.bg};border-bottom:1px solid ${t.line};
              height:330px;overflow:hidden}
   .st .frame img{width:100%;display:block}
   .st .body{padding:18px 22px 20px}
-  .st .hd{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
-  .st .n{font-family:'IBM Plex Mono',monospace;font-size:11px;color:${t.sand};
-         letter-spacing:.09em}
-  .st .n::before{content:'△ '}
   .st h3{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:600;
-         letter-spacing:.01em}
+         letter-spacing:.01em;margin-bottom:3px}
   .st .kind{font-size:13px;color:${t.sand};margin-bottom:9px}
   .st p{font-size:15px;line-height:1.55;color:${t.dim};margin-bottom:11px}
   .st .tech{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:${t.faint}}
@@ -216,38 +202,23 @@ function html(theme) {
 </style></head><body>
 <div class="card">
   <div class="inner">
-    <div class="fix">◇ ${me.coords} <s>/ ${me.place.toUpperCase()}</s></div>
     <h1>${me.name}</h1>
     <div class="role">${me.role}</div>
     <p class="lede">${me.lede}</p>
     <div class="org">${me.org}</div>
 
     <div class="block">
-      <dl>
-        <div><dt>SURVEYED</dt><dd>2022 — 2026</dd></div>
-        <div><dt>STATIONS</dt><dd>${stations.length} plotted</dd></div>
-        <div><dt>SOUNDINGS</dt><dd>${refusals.length} null</dd></div>
-        <div><dt>DATUM</dt><dd>Evidence</dd></div>
-      </dl>
-      <div class="key">
-        <span><b>△</b>station — work that shipped</span>
-        <span><b>◆</b>capability</span>
-        <span><b>—</b>null reading, recorded</span>
-      </div>
+      <dl>${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
     </div>
 
     ${rule(t, 'WHAT I BUILD')}
     ${builds.map(([k, v]) => `<div class="build"><b>${k}</b><span>${v}</span></div>`).join('')}
 
-    ${rule(t, 'WHEN THE ANSWER IS NO')}
-    <p class="lead-in">A model that cannot decline is not reporting a result, it is reporting a
-      formality. Three times a system I built returned nothing, and said why.</p>
-    <div class="refusals">
-      ${refusals.map(r => `
-        <div class="ref">
-          <div class="top"><span class="reading">${r.reading}</span><h3>${r.title}</h3></div>
-          <p>${r.line}</p>
-        </div>`).join('')}
+    ${rule(t, 'WHEN THE ANSWER WAS NO')}
+    <p class="lead-in">Anyone can ship something that always gives an answer. These three say
+      when they cannot, and why.</p>
+    <div class="honest">
+      ${honest.map(h => `<div class="hon"><h3>${h.title}</h3><p>${h.line}</p></div>`).join('')}
     </div>
 
     ${rule(t, 'STACK')}
@@ -261,12 +232,12 @@ function html(theme) {
       </div>`).join('')}
 
     ${rule(t, 'SELECTED WORK')}
-    <div class="stations">
-      ${stations.map(s => `
+    <div class="projects">
+      ${projects.map(s => `
         <div class="st">
           <div class="frame"><img src="${dataUri(s.shot)}" alt=""></div>
           <div class="body">
-            <div class="hd"><span class="n">STATION ${s.n}</span><h3>${s.name}</h3></div>
+            <h3>${s.name}</h3>
             <div class="kind">${s.kind}</div>
             <p>${s.line}</p>
             <div class="tech">${s.stack}</div>
@@ -279,10 +250,10 @@ function html(theme) {
     ${statBlock(t)}
 
     <footer>
-      <div class="eyebrow">CHART NOTES</div>
+      <div class="eyebrow">DETAILS</div>
       <div>${footer.edu}</div>
       <div>${footer.langs}</div>
-      <div>Every screenshot on this card is a real interface from a project that runs.</div>
+      <div>Every screenshot here is a real interface from a project that runs.</div>
     </footer>
   </div>
 </div>

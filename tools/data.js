@@ -4,11 +4,17 @@ export const me = {
   name: 'KARAM BALASMEH',
   role: 'AI Engineer',
   place: 'Amman, Jordan',
-  // Amman. Printed on the card the way a chart prints a position fix.
-  coords: "31°57′N  35°56′E",
   lede: 'Retrieval over knowledge graphs, agents that stop when the evidence runs out, and the data pipelines underneath national-scale government platforms.',
   org: '9XAI · Al-Hussein Technical University',
 };
+
+// Scannable facts. Plain labels, no jargon.
+export const facts = [
+  ['BASED IN',   'Amman, Jordan'],
+  ['EXPERIENCE', 'Since 2022'],
+  ['SHIPPED',    '7+ government platforms'],
+  ['OPEN TO',    'AI engineering roles'],
+];
 
 export const builds = [
   ['GOVERNMENT', 'Citizen-complaint intelligence at national scale — ingestion, classification, root-cause detection'],
@@ -17,22 +23,20 @@ export const builds = [
   ['PIPELINES',  'Kafka and Airflow moving events into Postgres, Neo4j and vector stores that stay queryable'],
 ];
 
-// The signature section. Three real moments a system I built declined to answer.
-export const refusals = [
+// Three projects where the honest answer was "no". Written plainly — the point
+// only lands if a reader gets it without decoding anything.
+export const honest = [
   {
-    reading: '0 / 60',
     title: 'Options Alpha Agent',
-    line: 'Enumerated sixty real SPY, QQQ and IWM spreads and priced expected value from delta-implied probabilities. None carried an edge. The agent stood aside rather than manufacture one, then traded the variance risk premium instead — the gap that is actually measurable.',
+    line: 'I priced 60 real option spreads to see which were worth trading. After costs, not one of them was. So the agent refused to trade rather than force a position, and went looking for a smaller edge that was actually there.',
   },
   {
-    reading: 'NO-GO',
     title: 'ReefShield Aqaba',
-    line: 'The plan was to validate the plume model against a satellite image of the October 2016 flood. The nearest clear pass was five days late and the plume had dispersed. That is a physical null, not a data-quality problem, so the interface says so and moves the validation target to an in-situ mooring record.',
+    line: 'I needed a satellite photo of a 2016 flood to check my model against. The satellite passed five days late, by which time the flood had cleared — the photo could never have existed. The app shows the check as failed and explains why, instead of quietly dropping it.',
   },
   {
-    reading: 'n = 8,500',
-    title: 'Petra Ride Intelligence',
-    line: 'Public reviews are customer-voice signal, not market share. Every comparison in the product carries its sample size, and a data-quality view shows what the pipeline dropped and why.',
+    title: 'Petra Ride',
+    line: 'App reviews tell you what people complain about, not how big a company is. Every chart in the product shows how many reviews it is built on, so nobody reads more into it than the data supports.',
   },
 ];
 
@@ -55,28 +59,28 @@ export const stack = [
   ]},
 ];
 
-// Plotted on the chart as stations. `shot` files are copied from the portfolio build.
-export const stations = [
+// `shot` files are copied from the portfolio build.
+export const projects = [
   {
-    n: '01', name: 'CHIXTER', kind: 'Restaurant network intelligence',
+    name: 'CHIXTER', kind: 'Restaurant network intelligence',
     line: 'Reads 24,865 orders across five branches and says which one is bleeding margin, why, and what to change this week. On the demo network 7.5 points of prime cost separate best from worst — and 89% of that gap is labour, not food.',
     stack: 'React · TypeScript · LLM analyst',
-    shot: 'chixter-01-overview.webp', wide: true,
+    shot: 'chixter-01-overview.webp',
   },
   {
-    n: '02', name: 'REEFSHIELD AQABA', kind: 'Wadi-to-reef sediment forecasting',
+    name: 'REEFSHIELD AQABA', kind: 'Wadi-to-reef sediment forecasting',
     line: 'Flash floods carry sediment onto coral that cannot move. Five catchments, eight reef zones, 1,402 mapped channels. A gradient-boosted model scores exposure and shows what drives the score, quoted against leave-one-catchment-out precision.',
     stack: 'Python · xarray · MapLibre · GBM',
-    shot: 'reef-historical.webp', wide: true,
+    shot: 'reef-historical.webp',
   },
   {
-    n: '03', name: 'PETRA RIDE', kind: 'Customer-voice intelligence',
+    name: 'PETRA RIDE', kind: 'Customer-voice intelligence',
     line: '8,500 public reviews across five Jordanian ride-hailing apps, classified by topic, sentiment and severity, then ranked by negative-signal share per month.',
     stack: 'FastAPI · Next.js · PostgreSQL',
     shot: 'petra-redesign_01_overview.webp',
   },
   {
-    n: '04', name: 'PATCHOULI', kind: 'Storefront for an Amman perfume house',
+    name: 'PATCHOULI', kind: 'Storefront for an Amman perfume house',
     line: 'Fragrance decoded rather than described — note pyramid, accord bars, a drag-to-explore bottle. Bilingual EN/AR with a fully mirrored RTL layout, and WhatsApp ordering, which is how Amman actually buys.',
     stack: 'React · Vite · Framer Motion',
     shot: 'perfume-home.webp',
